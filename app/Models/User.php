@@ -37,7 +37,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'id_rol', // Campo que relaciona al rol
+        'id_rol',
+        'telefono' // Campo que relaciona al rol
     ];
 
     /**

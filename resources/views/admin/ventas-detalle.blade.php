@@ -66,7 +66,7 @@
         </table>
 
         <!-- Botón para regresar -->
-        <a href="{{ route('admin.index') }}" class="block bg-blue-600 text-white text-center py-2 rounded mt-6 hover:bg-blue-700 transition-colors">
+        <a href="{{ route('admin.verPedidos') }}" class="block bg-blue-600 text-white text-center py-2 rounded mt-6 hover:bg-blue-700 transition-colors">
             Volver al Listado
         </a>
     </div>

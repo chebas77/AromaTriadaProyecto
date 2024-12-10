@@ -11,6 +11,7 @@ use App\Models\Tracking;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Venta;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -30,22 +31,21 @@ class AdminController extends Controller
         // Obtener usuarios conectados, ventas totales y nuevos usuarios
         $connectedUsers = DB::table('sessions')->whereNotNull('user_id')->count();
         $totalSales = DB::table('venta')->count();
-        $newUsers = DB::table('users')->count();
-
+        $newUsers = DB::table('users')->where('created_at', '>=', now()->subDays(7))->count(); // Nuevos usuarios en los últimos 7 días
+    
         // Datos para el gráfico de cantidad de ventas
         $salesData = DB::table('venta')
             ->selectRaw('MONTH(fecha) as month, COUNT(*) as total_sales')
             ->groupBy('month')
             ->orderBy('month')
             ->get();
-
+    
         // Convertir los datos para el gráfico
         $salesMonths = $salesData->pluck('month')->map(function ($month) {
             return date('F', mktime(0, 0, 0, $month, 1)); // Convertir números de mes a nombres
         });
-
         $salesTotals = $salesData->pluck('total_sales');
-
+    
         // Obtener los productos más vendidos (sin incluir servicios, ya que no hay un campo para distinguirlos)
         $topProducts = DB::table('detalle_pedidos')
             ->select('detalle_pedidos.id_producto', DB::raw('SUM(cantidad) as total_sold'))
@@ -54,12 +54,12 @@ class AdminController extends Controller
             ->orderByDesc('total_sold') // Ordenamos de forma descendente por las ventas totales
             ->limit(5) // Limitamos a los 5 productos más vendidos
             ->get();
-
+    
         // Obtener los nombres de los productos más vendidos
         $productNames = DB::table('productos')
             ->whereIn('id_producto', $topProducts->pluck('id_producto')) // Solo productos que están en los productos más vendidos
             ->pluck('nombre', 'id_producto'); // Traemos los nombres de los productos
-
+    
         // Preparar datos para el gráfico de pizza
         $soldProducts = $topProducts->map(function ($item) use ($productNames) {
             return [
@@ -68,24 +68,34 @@ class AdminController extends Controller
                 'product_name' => $productNames[$item->id_producto] ?? 'Desconocido', // Asignamos el nombre de producto o 'Desconocido' si no existe
             ];
         });
-
-
-
+    
         // Obtener los métodos de entrega más populares (solo Delivery y Recojo en tienda)
         $deliveryMethods = DB::table('venta')
             ->select(DB::raw("CASE WHEN metodo_entrega = 'Delivery' THEN 'Delivery' ELSE 'Recojo en tienda' END as metodo_entrega"), DB::raw('COUNT(*) as total_sales'))
             ->groupBy(DB::raw("CASE WHEN metodo_entrega = 'Delivery' THEN 'Delivery' ELSE 'Recojo en tienda' END"))
             ->orderByDesc('total_sales')
             ->get();
-
+    
         // Preparar los datos para el gráfico
         $methods = $deliveryMethods->pluck('metodo_entrega'); // Delivery, Recojo en tienda
         $salesByMethod = $deliveryMethods->pluck('total_sales'); // Ventas por cada método de entrega
-
+    
+        // Productos con stock 0
+        $productsOutOfStock = DB::table('productos')
+            ->where('stock', 0)
+            ->select('nombre', 'id_producto')
+            ->get();
+    
+        // Nuevas ventas y servicios (últimos 7 días como ejemplo)
+        $newSalesAndServices = DB::table('venta')
+    ->where('created_at', '>=', now()->subDay()) // Filtrar las últimas 24 horas
+    ->select('id_pedido', 'total', 'created_at') // Asegúrate de usar los nombres correctos de las columnas
+    ->orderBy('created_at', 'desc') // Ordenar por fecha descendente
+    ->get();
 
         // Verificar si el usuario tiene permisos de administrador
         $this->verificarAdministrador();
-
+    
         return view('admin.indexadmin', compact(
             'connectedUsers',
             'totalSales',
@@ -94,9 +104,12 @@ class AdminController extends Controller
             'salesTotals',
             'methods',
             'salesByMethod',
-            'soldProducts'
+            'soldProducts',
+            'productsOutOfStock', // Agregado
+            'newSalesAndServices' // Agregado
         ));
     }
+    
 
 
     public function gestionarProductos(Request $request)
@@ -119,21 +132,11 @@ class AdminController extends Controller
         }
     }
 
-    // Obtener el número total de productos filtrados
-    $totalProductos = $productosQuery->count();
-
-    // Si el número de productos filtrados es mayor que 10, aplicamos la paginación
-    if ($totalProductos > 10) {
-        $productos = $productosQuery->paginate(10);  // Paginación de 10 productos por página
-    } else {
-        // Si el número de productos es menor o igual a 10, mostramos todos los productos
-        $productos = $productosQuery->get();  // No paginamos, mostramos todos
-    }
+    // Paginar siempre con 10 productos por página
+    $productos = $productosQuery->paginate(10); // Paginación de 10 productos por página
 
     return view('admin.productos-index', compact('productos', 'categorias'));
 }
-
-
     // Vista para editar un producto
     public function editarProducto(Producto $producto)
     {
@@ -211,16 +214,18 @@ class AdminController extends Controller
         'imagen' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048', // Validación de imagen
     ]);
 
+    // Actualizar el nombre
+    $producto->nombre = $validated['nombre'];
+
+    // Actualizar el resto de los campos
+    $producto->descripcion = $validated['descripcion'] ?? $producto->descripcion;
+    $producto->precio = $validated['precio'];
+
     // Actualizar el stock
     $producto->stock = $validated['stock'];
 
-    // Si el stock es mayor a 0, la disponibilidad se establece en 1 (disponible)
-    if ($producto->stock > 0) {
-        $producto->disponibilidad = 1;  // Disponible
-    } else {
-        // Si el stock es 0, la disponibilidad se establece en 0 (no disponible)
-        $producto->disponibilidad = 0;  // No disponible
-    }
+    // Actualizar la disponibilidad dependiendo del stock
+    $producto->disponibilidad = $producto->stock > 0 ? 1 : 0;
 
     // Manejo de la imagen (si se ha subido una nueva)
     if ($request->hasFile('imagen')) {
@@ -240,6 +245,7 @@ class AdminController extends Controller
     // Redirigir con mensaje de éxito
     return redirect()->route('admin.gestionarProductos')->with('success', 'Producto actualizado con éxito.');
 }
+
 
 
     
@@ -385,6 +391,7 @@ class AdminController extends Controller
             'name' => 'required|max:255',
             'email' => 'required|email|unique:users,email,' . $usuario->id,
             'id_rol' => 'required|exists:roles,id_rol', // Validamos que el rol exista
+            'telefono' => 'nullable|max:15',
         ]);
 
         // Actualiza el usuario con los datos validados

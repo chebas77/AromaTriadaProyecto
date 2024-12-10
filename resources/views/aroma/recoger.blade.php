@@ -3,8 +3,8 @@
 @section('title', 'Carrito Confirmado - Recoger en Tienda')
 
 @section('content')
-<section class="container mx-auto py-12 px-6 bg-gray-50">
-    <h1 class="text-3xl font-extrabold text-center text-gray-900 mb-8">Carrito Confirmado - Recoger en Tienda</h1>
+<section class="container mx-auto py-12 px-6 bg-gray-50 mt-10">
+    <h1 class="text-3xl font-extrabold text-center text-crema-1 mb-8">Carrito Confirmado - Recoger en Tienda</h1>
 
     @if(session('carrito') && count(session('carrito')) > 0)
     <div class="bg-white p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
@@ -37,15 +37,16 @@
 
             <input type="text" id="direccion_entrega" name="direccion_entrega" value="Recoger en tienda" readonly class="w-full bg-gray-100 border rounded-lg px-4 py-3 mb-4 text-gray-700">
 
-            <!-- Campos para la fecha y hora de recogida -->
+            <!-- Campos para la fecha y hora de entrega -->
             <div class="mb-6">
-                <label for="fecha_entrega" class="block text-gray-700 font-semibold mb-2">Fecha de Recogida</label>
-                <input type="date" id="fecha_entrega" name="fecha_entrega" value="{{ now()->format('Y-m-d') }}" class="w-full border rounded-lg px-4 py-3">
+                <label for="fecha_entrega" class="block text-gray-700 font-semibold mb-2">Fecha de Entrega</label>
+                <input type="date" id="fecha_entrega" name="fecha_entrega" class="w-full border rounded-lg px-4 py-3" required min="{{ now()->format('Y-m-d') }}">
             </div>
 
+
             <div class="mb-6">
-                <label for="hora_entrega" class="block text-gray-700 font-semibold mb-2">Hora de Recogida</label>
-                <input type="time" id="hora_entrega" name="hora_entrega" class="w-full border rounded-lg px-4 py-3" required>
+                <label for="hora_entrega" class="block text-gray-700 font-semibold mb-2">Hora de Entrega</label>
+                <input type="time" id="hora_entrega" name="hora_entrega" class="w-full border rounded-lg px-4 py-3" required min="09:00" max="22:00">
             </div>
 
             <!-- Campo oculto para la fecha -->

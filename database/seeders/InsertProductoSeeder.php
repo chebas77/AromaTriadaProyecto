@@ -15,16 +15,7 @@ class InsertProductoSeeder extends Seeder
     public function run(): void
     {
         DB::table('productos')->insert([
-            [
-                'nombre' => 'Torta de Zanahoria',
-                'descripcion' => 'Una torta húmeda de zanahoria, cubierta con crema de queso.',
-                'precio' => 110.00,
-                'imagen' => 'images/torta_zanahoria.jpg',
-                'disponibilidad' => 1,
-                'id_categoria' => 1, // Categoria: Tortas
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+           
             [
                 'nombre' => 'Torta de Manzana',
                 'descripcion' => 'Deliciosa torta casera de manzana con canela.',

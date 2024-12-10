@@ -9,6 +9,9 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\TrackingController; // Para el tracking
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\PDFController;
+
+Route::post('/admin/generar-pdf', [PDFController::class, 'generarPDF'])->name('admin.generarPDF');
 
 
 Route::get('/productos-destacados', [ProductoController::class, 'destacados'])->name('productos.destacados');

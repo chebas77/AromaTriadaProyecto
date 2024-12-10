@@ -33,7 +33,7 @@
             <div id="direccion-container" class="mb-6">
                 <label for="direccion_entrega" class="block text-gray-700 font-semibold mb-2">Dirección de Entrega</label>
                 <input type="text" id="direccion_entrega" name="direccion_entrega" class="w-full bg-gray-100 border rounded-lg px-4 py-3 text-gray-700" placeholder="Ingresa tu dirección" required>
-                
+
                 <!-- Google Map -->
                 <div id="map" class="w-full h-64 border rounded-lg mb-4 mt-4"></div>
 
@@ -46,12 +46,13 @@
             <!-- Campos para la fecha y hora de entrega -->
             <div class="mb-6">
                 <label for="fecha_entrega" class="block text-gray-700 font-semibold mb-2">Fecha de Entrega</label>
-                <input type="date" id="fecha_entrega" name="fecha_entrega" value="{{ now()->format('Y-m-d') }}" class="w-full border rounded-lg px-4 py-3">
+                <input type="date" id="fecha_entrega" name="fecha_entrega" class="w-full border rounded-lg px-4 py-3" required min="{{ now()->format('Y-m-d') }}">
             </div>
+
 
             <div class="mb-6">
                 <label for="hora_entrega" class="block text-gray-700 font-semibold mb-2">Hora de Entrega</label>
-                <input type="time" id="hora_entrega" name="hora_entrega" class="w-full border rounded-lg px-4 py-3" required>
+                <input type="time" id="hora_entrega" name="hora_entrega" class="w-full border rounded-lg px-4 py-3" required min="09:00" max="22:00">
             </div>
 
             <!-- Total del carrito -->
@@ -61,6 +62,7 @@
             <button type="submit" id="btn-confirmar-metodo" class="bg-black text-white px-8 py-4 rounded-full font-semibold hover:bg-gray-800 transition duration-300 w-full mt-6">
                 Confirmar y Proceder al Pago
             </button>
+
         </form>
     </div>
 
@@ -74,13 +76,16 @@
     let marker;
 
     function initMap() {
-        const initialLocation = { lat: -12.0464, lng: -77.0428 }; // Lima, Perú
+        const initialLocation = {
+            lat: -12.0464,
+            lng: -77.0428
+        }; // Lima, Perú
         const geocoder = new google.maps.Geocoder();
 
         map = new google.maps.Map(document.getElementById("map"), {
             center: initialLocation,
             zoom: 15,
-            mapTypeControl: false,  // Disable map type control
+            mapTypeControl: false, // Disable map type control
             streetViewControl: false, // Disable street view control
         });
 
@@ -90,14 +95,14 @@
             draggable: true,
         });
 
-        google.maps.event.addListener(marker, 'dragend', function () {
+        google.maps.event.addListener(marker, 'dragend', function() {
             const position = marker.getPosition();
             updateAddress(position);
         });
 
-        document.getElementById('btn-ubicacion-actual').addEventListener('click', function () {
+        document.getElementById('btn-ubicacion-actual').addEventListener('click', function() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
+                navigator.geolocation.getCurrentPosition(function(position) {
                     const currentLocation = {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
@@ -105,7 +110,7 @@
                     map.setCenter(currentLocation);
                     marker.setPosition(currentLocation);
                     updateAddress(currentLocation);
-                }, function () {
+                }, function() {
                     alert('No se pudo obtener la ubicación actual.');
                 });
             } else {
@@ -114,7 +119,9 @@
         });
 
         function updateAddress(location) {
-            geocoder.geocode({ location }, function (results, status) {
+            geocoder.geocode({
+                location
+            }, function(results, status) {
                 if (status === 'OK' && results[0]) {
                     document.getElementById('direccion_entrega').value = results[0].formatted_address;
                 }

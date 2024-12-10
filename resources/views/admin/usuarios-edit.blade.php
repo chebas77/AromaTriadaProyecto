@@ -45,6 +45,18 @@
             <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror
         </div>
+        <!-- Campo para el teléfono -->
+<div>
+    <label for="telefono" class="block text-gray-700 font-bold mb-2">Teléfono:</label>
+    <input type="text" name="telefono" id="telefono" value="{{ old('telefono', $usuario->telefono) }}" 
+           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+           minlength="9" maxlength="12" 
+           placeholder="Ingrese su número de teléfono">
+    @error('telefono')
+    <span class="text-red-500 text-sm">{{ $message }}</span>
+    @enderror
+</div>
+
 
         <!-- Botón para guardar cambios -->
         <div class="flex justify-end">

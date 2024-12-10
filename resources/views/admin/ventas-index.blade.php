@@ -140,4 +140,62 @@
         Regresar
     </a>
 </div>
+<div class="text-right mb-4">
+    <button 
+        type="button" 
+        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none"
+        onclick="document.getElementById('pdfModal').classList.remove('hidden')">
+        Configurar PDF
+    </button>
+</div>
+<!-- Modal -->
+<div id="pdfModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white w-1/2 rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold mb-4">Configurar PDF</h2>
+        
+        <form action="{{ route('admin.generarPDF') }}" target="_blank" method="POST">
+            @csrf
+            {{-- Selección de rango de tiempo --}}
+            <div class="mb-4">
+                <label for="fecha_inicio" class="block text-sm font-medium text-gray-700">Fecha Inicio</label>
+                <input type="date" id="fecha_inicio" name="fecha_inicio" class="mt-1 block w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-4">
+                <label for="fecha_fin" class="block text-sm font-medium text-gray-700">Fecha Fin</label>
+                <input type="date" id="fecha_fin" name="fecha_fin" class="mt-1 block w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            {{-- Selección de columnas --}}
+            <div class="mb-4">
+                <label for="columnas" class="block text-sm font-medium text-gray-700">Seleccionar columnas</label>
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                    <label><input type="checkbox" name="columnas[]" value="ID Venta" checked> ID Venta</label>
+                    <label><input type="checkbox" name="columnas[]" value="Usuario" checked> Usuario</label>
+                    <label><input type="checkbox" name="columnas[]" value="Total" checked> Total</label>
+                    <label><input type="checkbox" name="columnas[]" value="Fecha" checked> Fecha</label>
+                    <label><input type="checkbox" name="columnas[]" value="Estado" checked> Estado</label>
+                    <label><input type="checkbox" name="columnas[]" value="Metodo Pago"> Método Pago</label>
+                    <label><input type="checkbox" name="columnas[]" value="Metodo Entrega"> Método Entrega</label>
+                    <label><input type="checkbox" name="columnas[]" value="Direccion Entrega"> Dirección Entrega</label>
+                </div>
+            </div>
+            
+            {{-- Botones del modal --}}
+            <div class="flex justify-end space-x-4">
+                <button 
+                    type="button" 
+                    class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 focus:outline-none"
+                    onclick="document.getElementById('pdfModal').classList.add('hidden')">
+                    Cancelar
+                </button>
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none">
+                    Generar PDF
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection

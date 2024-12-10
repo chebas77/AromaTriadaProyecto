@@ -21,7 +21,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="border px-4 py-2">{{ $servicio->nombre }}</td>
                     <td class="border px-4 py-2">{{ $servicio->descripcion }}</td>
-                    <td class="border px-4 py-2">S/ {{ number_format($servicio->precio, 2) }}</td>
+                    <td class="border px-4 py-2">S/{{ number_format($servicio->precio, 2) }}</td>
                     
                      <!-- Columna de disponibilidad con el toggle switch centrado -->
                      <td class="border px-4 py-2 text-center">

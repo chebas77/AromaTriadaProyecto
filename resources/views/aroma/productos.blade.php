@@ -21,6 +21,7 @@
                 <input type="hidden" name="id" value="{{ $item->id_producto }}">
                 <input type="hidden" name="tipo" value="producto">
 
+                @if ($item->categoria->nombre === 'Tortas' || $item->categoria->nombre === 'Bocaditos')
                 <!-- Configuración para Tamaño -->
                 <label for="tamano" class="block text-gray-700 font-semibold mb-2">Selecciona el tamaño</label>
                 <select name="tamano" id="tamano" class="w-full border rounded px-4 py-2 mb-4" onchange="updatePrecio()">
@@ -31,13 +32,26 @@
                     @endforeach
                 </select>
                 <input type="hidden" name="precio_unitario" id="precio-unitario" value="{{ $tamanos[0]['precio'] }}">
+                @elseif ($item->categoria->nombre === 'Boxes')
+                <!-- Tamaños para Boxes -->
+                <label for="tamano" class="block text-gray-700 font-semibold mb-2">Selecciona el tamaño del Box</label>
+                <select name="tamano" id="tamano" class="w-full border rounded px-4 py-2 mb-4" onchange="updatePrecio()">
+                    <option value="Pequeño" data-precio="{{ $item->precio * 0.5 }}">Pequeño - S/ {{ number_format($item->precio * 0.5, 2) }}</option>
+                    <option value="Mediano" data-precio="{{ $item->precio }}">Mediano - S/ {{ number_format($item->precio, 2) }}</option>
+                    <option value="Grande" data-precio="{{ $item->precio * 1.5 }}">Grande - S/ {{ number_format($item->precio * 1.5, 2) }}</option>
+                </select>
+                <input type="hidden" name="precio_unitario" id="precio-unitario" value="{{ $item->precio }}">
+                @else
+                <!-- Precio fijo para otros productos -->
+                <input type="hidden" name="precio_unitario" id="precio-unitario" value="{{ $item->precio }}">
+                @endif
 
                 <!-- Cantidad -->
                 <label for="cantidad" class="block text-gray-700 font-semibold mb-2">Cantidad</label>
                 <div class="flex items-center space-x-4 mb-4">
                     <button type="button" class="bg-gray-300 px-4 py-2 rounded" onclick="updateCantidad(-1)">-</button>
                     <input type="number" name="cantidad" id="cantidad" value="1" min="1" max="{{ $item->stock }}"
-                        class="w-16 border rounded text-center">
+                        class="w-16 border rounded text-center" readonly>
                     <button type="button" class="bg-gray-300 px-4 py-2 rounded" onclick="updateCantidad(1)">+</button>
                 </div>
 
@@ -75,10 +89,20 @@
     const tamanoSelect = document.getElementById('tamano');
     const cantidadInput = document.getElementById('cantidad');
     const precioTotal = document.getElementById('precio-total');
+    const stock = {{ $item->stock }};  // El stock máximo disponible
+
+    // Esta función actualizará la cantidad
+    function updateCantidad(delta) {
+        let cantidad = parseInt(cantidadInput.value) + delta;
+        cantidad = cantidad < 1 ? 1 : cantidad; // Asegura que la cantidad no sea menor que 1
+        cantidad = cantidad > stock ? stock : cantidad; // Asegura que la cantidad no supere el stock disponible
+        cantidadInput.value = cantidad;
+        updatePrecio(); // Actualiza el precio total
+    }
 
     // Esta función actualizará el precio total
     function updatePrecio() {
-        const precioUnitario = tamanoSelect.options[tamanoSelect.selectedIndex].getAttribute('data-precio');
+        const precioUnitario = tamanoSelect.options[tamanoSelect.selectedIndex].getAttribute('data-precio'); // Precio del tamaño seleccionado
         document.getElementById('precio-unitario').value = precioUnitario;
         const cantidad = cantidadInput.value;
         const total = parseFloat(precioUnitario) * parseInt(cantidad); // Calculamos el total
