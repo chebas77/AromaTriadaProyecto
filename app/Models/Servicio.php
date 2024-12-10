@@ -12,7 +12,7 @@ class Servicio extends Model
     protected $table = 'servicios'; // Tabla servicios
     protected $primaryKey = 'id_servicio'; // Llave primaria
 
-    protected $fillable = ['nombre', 'descripcion', 'precio', 'disponibilidad', 'tipo_servicio', 'id_categoria'];
+    protected $fillable = ['nombre', 'descripcion', 'precio', 'disponibilidad'];
 
     public function categoria()
     {
