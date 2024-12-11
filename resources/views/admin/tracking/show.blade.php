@@ -4,7 +4,7 @@
 @section('content')
 <section class="container mx-auto py-12 px-6">
     <h1 class="text-3xl font-bold mb-6 text-center">Gestionar Tracking</h1>
-    
+
     <div class="bg-white shadow-lg rounded-lg p-8 max-w-3xl mx-auto">
         <p class="mb-4"><strong>ID Pedido:</strong> {{ $tracking->id_venta }}</p>
         <p class="mb-4"><strong>Estado Actual:</strong> {{ $tracking->estado_actual }}</p>
@@ -30,13 +30,25 @@
                 </select>
             </div>
 
-            <!-- Fecha de Despacho -->
-            <div class="mb-4">
-                <label for="fecha_despacho" class="block text-gray-700 font-bold mb-2">Fecha de Despacho</label>
-                <input type="datetime-local" name="fecha_despacho" id="fecha_despacho" 
-                       value="{{ $tracking->fecha_despacho ? $tracking->fecha_despacho->format('Y-m-d\TH:i') : '' }}"
-                       class="w-full border rounded-lg px-4 py-2">
-            </div>
+<!-- Fecha de Despacho -->
+<div class="mb-4">
+    <label for="fecha_despacho" class="block text-gray-700 font-bold mb-2">Fecha de Despacho</label>
+    <div class="flex items-center space-x-4">
+        <input
+            type="datetime-local"
+            name="fecha_despacho"
+            id="fecha_despacho"
+            value="{{ $tracking->fecha_despacho ? $tracking->fecha_despacho->format('Y-m-d\TH:i') : '' }}"
+            class="w-full border rounded-lg px-4 py-2">
+        <button
+            type="button"
+            onclick="setTodayMinusFiveHours()"
+            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+            Hoy 
+        </button>
+    </div>
+</div>
+
 
             <!-- Botones -->
             <div class="flex justify-between">
@@ -50,4 +62,19 @@
         </form>
     </div>
 </section>
+<script>
+    function setTodayMinusFiveHours() {
+        // Obtener la fecha y hora actual
+        const now = new Date();
+
+        // Restar 5 horas
+        now.setHours(now.getHours() - 5);
+
+        // Formatear la fecha y hora en formato 'YYYY-MM-DDTHH:mm'
+        const formattedDate = now.toISOString().slice(0, 16);
+
+        // Asignar el valor al campo de tipo datetime-local
+        document.getElementById('fecha_despacho').value = formattedDate;
+    }
+</script>
 @endsection

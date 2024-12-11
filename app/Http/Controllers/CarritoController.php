@@ -11,56 +11,56 @@ class CarritoController extends Controller
 
 { // Muestra detalles de productos
     public function mostrarDetalle($tipo, $id)
-{
-    if ($tipo === 'producto') {
-        $item = Producto::findOrFail($id);
+    {
+        if ($tipo === 'producto') {
+            $item = Producto::findOrFail($id);
 
-        // Obtenemos el precio del tamaño Grande desde la base de datos
-        $precioGrande = $item->precio;
+            // Obtenemos el precio del tamaño Grande desde la base de datos
+            $precioGrande = $item->precio;
 
-        // Verificar si el precio del producto está disponible
-        if (!$precioGrande) {
-            abort(404, 'Precio no encontrado para el tamaño Grande');
+            // Verificar si el precio del producto está disponible
+            if (!$precioGrande) {
+                abort(404, 'Precio no encontrado para el tamaño Grande');
+            }
+
+            // Calcular los precios de los otros tamaños en base al tamaño Grande
+            $tamanos = [];  // Inicializamos el arreglo de tamaños
+
+            if ($item->categoria->nombre === 'Tortas') {
+                // Precios calculados proporcionalmente para Tortas
+                $tamanos = [
+                    ['tamano' => 'Pequeña (20 tajadas)', 'precio' => $precioGrande * 0.5], // 50% del precio Grande
+                    ['tamano' => 'Mediana (30 tajadas)', 'precio' => $precioGrande * 0.8], // 80% del precio Grande
+                    ['tamano' => 'Grande (40 tajadas)', 'precio' => $precioGrande],        // Precio base para Grande
+                ];
+            } elseif ($item->categoria->nombre === 'Bocaditos') {
+                // Precios calculados proporcionalmente para Bocaditos
+                $tamanos = [
+                    ['tamano' => 'Pequeño (20 unidades)', 'precio' => $precioGrande * 0.6],  // 60% del precio Grande
+                    ['tamano' => 'Mediano (50 unidades)', 'precio' => $precioGrande * 1],    // 100% del precio Grande
+                    ['tamano' => 'Grande (100 unidades)', 'precio' => $precioGrande * 2],    // 200% del precio Grande
+                ];
+            } elseif ($item->categoria->nombre === 'Boxes') {
+                // Para Boxes, calculamos los tamaños
+                $tamanos = [
+                    ['tamano' => 'Pequeño', 'precio' => $precioGrande * 0.5],  // 50% del precio Grande
+                    ['tamano' => 'Mediano', 'precio' => $precioGrande],        // 100% del precio Grande
+                    ['tamano' => 'Grande', 'precio' => $precioGrande * 1.5],   // 150% del precio Grande
+                ];
+            }
+
+            // Si el producto no tiene tamaños definidos, usamos un precio fijo
+            if (empty($tamanos)) {
+                $tamanos = [
+                    ['tamano' => 'Único tamaño', 'precio' => $precioGrande] // Precio fijo
+                ];
+            }
+
+            return view('aroma.productos', compact('item', 'tamanos', 'tipo'));
         }
 
-        // Calcular los precios de los otros tamaños en base al tamaño Grande
-        $tamanos = [];  // Inicializamos el arreglo de tamaños
-
-        if ($item->categoria->nombre === 'Tortas') {
-            // Precios calculados proporcionalmente para Tortas
-            $tamanos = [
-                ['tamano' => 'Pequeña (20 tajadas)', 'precio' => $precioGrande * 0.5], // 50% del precio Grande
-                ['tamano' => 'Mediana (30 tajadas)', 'precio' => $precioGrande * 0.8], // 80% del precio Grande
-                ['tamano' => 'Grande (40 tajadas)', 'precio' => $precioGrande],        // Precio base para Grande
-            ];
-        } elseif ($item->categoria->nombre === 'Bocaditos') {
-            // Precios calculados proporcionalmente para Bocaditos
-            $tamanos = [
-                ['tamano' => 'Pequeño (20 unidades)', 'precio' => $precioGrande * 0.6],  // 60% del precio Grande
-                ['tamano' => 'Mediano (50 unidades)', 'precio' => $precioGrande * 1],    // 100% del precio Grande
-                ['tamano' => 'Grande (100 unidades)', 'precio' => $precioGrande * 2],    // 200% del precio Grande
-            ];
-        } elseif ($item->categoria->nombre === 'Boxes') {
-            // Para Boxes, calculamos los tamaños
-            $tamanos = [
-                ['tamano' => 'Pequeño', 'precio' => $precioGrande * 0.5],  // 50% del precio Grande
-                ['tamano' => 'Mediano', 'precio' => $precioGrande],        // 100% del precio Grande
-                ['tamano' => 'Grande', 'precio' => $precioGrande * 1.5],   // 150% del precio Grande
-            ];
-        }
-
-        // Si el producto no tiene tamaños definidos, usamos un precio fijo
-        if (empty($tamanos)) {
-            $tamanos = [
-                ['tamano' => 'Único tamaño', 'precio' => $precioGrande] // Precio fijo
-            ];
-        }
-
-        return view('aroma.productos', compact('item', 'tamanos', 'tipo'));
+        abort(404);
     }
-
-    abort(404);
-}
 
 
     // Muestra el contenido del carrito y los servicios disponibles
@@ -81,61 +81,65 @@ class CarritoController extends Controller
     }
     // Agrega un producto al carrito (simplificado)
     public function agregarAlCarrito(Request $request)
-{
-    // Recuperar el carrito existente de la sesión o inicializarlo vacío
-    $carrito = session('carrito', []);
+    {
+        // Recuperar el carrito existente de la sesión o inicializarlo vacío
+        $carrito = session('carrito', []);
 
-    // Si la imagen no es proporcionada por el frontend, se usará una imagen por defecto
-    $imagen = $request->imagen ? asset($request->imagen) : asset('images/placeholder.png');
+        // Si la imagen no es proporcionada por el frontend, se usará una imagen por defecto
+        $imagen = $request->imagen ? asset($request->imagen) : asset('images/placeholder.png');
 
-    // Obtener el producto de la base de datos
-    $producto = Producto::findOrFail($request->id);
+        // Obtener el producto de la base de datos
+        $producto = Producto::findOrFail($request->id);
 
-    // Añadir el nuevo producto al carrito
-    $carrito[] = [
-        'imagen' => $imagen, // Imagen de la solicitud o la imagen predeterminada
-        'id' => $request->id,
-        'tipo' => $request->tipo,
-        'nombre' => $producto->nombre,
-        'tamano' => $request->tamano,
-        'cantidad' => $request->cantidad,
-        'precio_unitario' => $request->precio_unitario,
-        'total' => $request->cantidad * $request->precio_unitario,
-        'dedicatoria' => $request->dedicatoria ?? 'Sin dedicatoria', // Agregar dedicatoria si existe
-    ];
+        // Añadir el nuevo producto al carrito
+        $carrito[] = [
+            'imagen' => $imagen, // Imagen de la solicitud o la imagen predeterminada
+            'id' => $request->id,
+            'tipo' => $request->tipo,
+            'nombre' => $producto->nombre,
+            'tamano' => $request->tamano,
+            'cantidad' => $request->cantidad,
+            'precio_unitario' => $request->precio_unitario,
+            'total' => $request->cantidad * $request->precio_unitario,
+            'dedicatoria' => $request->dedicatoria ?? 'Sin dedicatoria', // Agregar dedicatoria si existe
+        ];
 
-    // Guardar el carrito actualizado en la sesión
-    session(['carrito' => $carrito]);
+        // Guardar el carrito actualizado en la sesión
+        session(['carrito' => $carrito]);
 
-    // Redirigir con un mensaje de éxito
-    return redirect()->route('carrito.mostrar')->with('success', 'Producto agregado al carrito.');
-}
+        // Redirigir con un mensaje de éxito
+        return redirect()->route('carrito.mostrar')->with('success', 'Producto agregado al carrito.');
+    }
 
 
     // Agrega servicios al carrito
     public function agregarServicios(Request $request)
-    {
-        $carrito = session()->get('carrito', []);
+{
+    $carrito = session()->get('carrito', []);
 
-        if ($request->has('servicio')) {
-            $servicioId = $request->input('servicio');
-            $cantidadMozos = $request->input('cantidad_mozos', 1);
+    // Verificar si se seleccionaron servicios
+    if ($request->has('servicios')) {
+        $serviciosSeleccionados = $request->input('servicios'); // Array de IDs de servicios
+        $cantidadMozos = $request->input('cantidad_mozos', 1); // Cantidad de mozos
 
+        foreach ($serviciosSeleccionados as $servicioId) {
             $servicio = Servicio::find($servicioId);
 
             if ($servicio) {
                 $key = 'servicio-' . $servicioId;
 
+                // Manejar el caso del servicio "Mozo"
                 if (strtolower($servicio->nombre) === 'mozo') {
                     $carrito[$key] = [
                         'id' => $servicio->id_servicio,
                         'nombre' => $servicio->nombre,
-                        'cantidad' => $cantidadMozos,
+                        'cantidad' => $cantidadMozos, // Tomar la cantidad seleccionada
                         'precio_unitario' => $servicio->precio,
                         'total' => $servicio->precio * $cantidadMozos,
                         'tipo' => 'servicio',
                     ];
                 } else {
+                    // Otros servicios
                     $carrito[$key] = [
                         'id' => $servicio->id_servicio,
                         'nombre' => $servicio->nombre,
@@ -148,10 +152,15 @@ class CarritoController extends Controller
             }
         }
 
+        // Guardar el carrito actualizado en la sesión
         session()->put('carrito', $carrito);
 
-        return redirect()->route('carrito.mostrar')->with('success', 'Servicio agregado al carrito.');
+        return redirect()->route('carrito.mostrar')->with('success', 'Servicios agregados al carrito.');
     }
+
+    return redirect()->route('carrito.mostrar')->with('error', 'No se seleccionaron servicios.');
+}
+
 
     // Elimina un producto del carrito
     public function eliminar(Request $request)
@@ -193,138 +202,138 @@ class CarritoController extends Controller
         return redirect()->route('carrito.mostrar')->with('success', 'Cantidad actualizada.');
     }
     public function evaluarCarrito(Request $request)
-{
-    
-    // Obtener el carrito de la sesión
-    $carrito = session()->get('carrito', []);
+    {
 
-    // Verificar si el carrito está vacío
-    if (empty($carrito)) {
-        return redirect()->route('carrito.mostrar')->with('error', 'El carrito está vacío.');
-    }
+        // Obtener el carrito de la sesión
+        $carrito = session()->get('carrito', []);
 
-    // Variables para acumular los totales
-    $totalProductos = 0;
-    $totalServicios = 0;
-    $totalCarrito = 0;
-
-    // Recorrer el carrito y analizar su contenido
-    foreach ($carrito as $item) {
-        // Si es un producto
-        if ($item['tipo'] === 'producto') {
-            $totalProductos += $item['total'];  // Acumulamos el total de los productos
+        // Verificar si el carrito está vacío
+        if (empty($carrito)) {
+            return redirect()->route('carrito.mostrar')->with('error', 'El carrito está vacío.');
         }
 
-        // Si es un servicio
-        if ($item['tipo'] === 'servicio') {
-            $totalServicios += $item['total'];  // Acumulamos el total de los servicios
+        // Variables para acumular los totales
+        $totalProductos = 0;
+        $totalServicios = 0;
+        $totalCarrito = 0;
+
+        // Recorrer el carrito y analizar su contenido
+        foreach ($carrito as $item) {
+            // Si es un producto
+            if ($item['tipo'] === 'producto') {
+                $totalProductos += $item['total'];  // Acumulamos el total de los productos
+            }
+
+            // Si es un servicio
+            if ($item['tipo'] === 'servicio') {
+                $totalServicios += $item['total'];  // Acumulamos el total de los servicios
+            }
         }
-    }
 
-    // Calcular el total del carrito (productos + servicios)
-    $totalCarrito = $totalProductos + $totalServicios;
+        // Calcular el total del carrito (productos + servicios)
+        $totalCarrito = $totalProductos + $totalServicios;
 
-    // Verificar el método de entrega en el carrito
-    $metodoEntrega = session()->get('metodo_entrega', 'Recojo en tienda'); // Si no existe, predeterminado a "Recojo en tienda"
+        // Verificar el método de entrega en el carrito
+        $metodoEntrega = session()->get('metodo_entrega', 'Recojo en tienda'); // Si no existe, predeterminado a "Recojo en tienda"
 
-    // Verificamos si el carrito tiene Delivery
-    $isDelivery = false;
-    foreach ($carrito as $item) {
-        if ($item['tipo'] === 'servicio' && strtolower($item['nombre']) === 'delivery') {
-            $isDelivery = true;
-            break;
+        // Verificamos si el carrito tiene Delivery
+        $isDelivery = false;
+        foreach ($carrito as $item) {
+            if ($item['tipo'] === 'servicio' && strtolower($item['nombre']) === 'delivery') {
+                $isDelivery = true;
+                break;
+            }
         }
-    }
 
-    // Si el método de entrega es "Delivery", verificamos que haya una dirección
-    if ($isDelivery) {
-        $direccionEntrega = session()->get('direccion_entrega', null);
-        if (is_null($direccionEntrega)) {
-            dd('El carrito tiene Delivery pero no se ha especificado una dirección de entrega.');
+        // Si el método de entrega es "Delivery", verificamos que haya una dirección
+        if ($isDelivery) {
+            $direccionEntrega = session()->get('direccion_entrega', null);
+            if (is_null($direccionEntrega)) {
+                dd('El carrito tiene Delivery pero no se ha especificado una dirección de entrega.');
+            }
         }
+
+        // Asignamos el método de entrega final para la vista
+        if (!$isDelivery) {
+            // Si no hay Delivery, asignamos "Recojo en tienda" como predeterminado
+            session()->put('metodo_entrega', 'Recojo en tienda');
+        }
+
+        // Ahora redirigimos al carrito confirmado
+        return redirect()->route('carrito.confirmar')->with([
+            'success' => 'Método de entrega actualizado.',
+            'metodo_entrega' => session('metodo_entrega'),
+            'direccion_entrega' => $direccionEntrega ?? null,
+        ]);
     }
 
-    // Asignamos el método de entrega final para la vista
-    if (!$isDelivery) {
-        // Si no hay Delivery, asignamos "Recojo en tienda" como predeterminado
-        session()->put('metodo_entrega', 'Recojo en tienda');
-    }
 
-    // Ahora redirigimos al carrito confirmado
-    return redirect()->route('carrito.confirmar')->with([
-        'success' => 'Método de entrega actualizado.',
-        'metodo_entrega' => session('metodo_entrega'),
-        'direccion_entrega' => $direccionEntrega ?? null,
-    ]);
-}
-
-    
 
     // Guarda el método de entrega
     public function guardarMetodoEntrega(Request $request)
-{
-    $validated = $request->validate([
-        'metodo_entrega' => 'required|string',
-        'direccion' => 'nullable|string',  // Dirección solo si es Delivery
-    ]);
+    {
+        $validated = $request->validate([
+            'metodo_entrega' => 'required|string',
+            'direccion' => 'nullable|string',  // Dirección solo si es Delivery
+        ]);
 
-    // Verificamos si el método de entrega es "Recojo en tienda" o "Delivery"
-    session()->put('metodo_entrega', $validated['metodo_entrega']);
-    
-    if ($validated['metodo_entrega'] !== 'Recojo en tienda') {
-        // Si el método de entrega no es "Recojo en tienda", asumimos que es Delivery y guardamos la dirección
-        session()->put('direccion_entrega', $validated['direccion']);
+        // Verificamos si el método de entrega es "Recojo en tienda" o "Delivery"
+        session()->put('metodo_entrega', $validated['metodo_entrega']);
+
+        if ($validated['metodo_entrega'] !== 'Recojo en tienda') {
+            // Si el método de entrega no es "Recojo en tienda", asumimos que es Delivery y guardamos la dirección
+            session()->put('direccion_entrega', $validated['direccion']);
+        }
+
+        return redirect()->route('carrito.confirmar')->with('success', 'Método de entrega actualizado.');
     }
-
-    return redirect()->route('carrito.confirmar')->with('success', 'Método de entrega actualizado.');
-}
 
     // Confirma el carrito y calcula el total
     public function confirmarCarrito(Request $request)
-{
-    // Obtener el carrito de la sesión
-    $carrito = session('carrito', []);
+    {
+        // Obtener el carrito de la sesión
+        $carrito = session('carrito', []);
 
-    // Verificar si el carrito tiene un ítem de tipo "Delivery"
-    $isDelivery = false;
-    foreach ($carrito as $item) {
-        if ($item['tipo'] === 'servicio' && strtolower($item['nombre']) === 'delivery') {
-            $isDelivery = true;
-            break;
+        // Verificar si el carrito tiene un ítem de tipo "Delivery"
+        $isDelivery = false;
+        foreach ($carrito as $item) {
+            if ($item['tipo'] === 'servicio' && strtolower($item['nombre']) === 'delivery') {
+                $isDelivery = true;
+                break;
+            }
         }
+
+        // Calcular el total del carrito
+        $totalCarrito = 0;
+        foreach ($carrito as $item) {
+            $totalCarrito += $item['precio_unitario'] * $item['cantidad'];  // Calcular el subtotal por producto y acumularlo
+        }
+
+        // Obtener los valores de la sesión relacionados con la entrega
+        $metodoEntrega = session('metodo_entrega', 'Recoger en tienda');
+        $direccionEntrega = session('direccion_entrega', 'Recoger en tienda');
+        $horaEntrega = session('hora_entrega', null);
+
+        // Guardar el total calculado en la sesión
+        session(['total_carrito' => $totalCarrito]);
+
+        // Si el carrito tiene un servicio de "Delivery", redirigir a la vista de delivery con el mapa
+        if ($isDelivery) {
+            return view('aroma.delivery', compact('carrito', 'metodoEntrega', 'direccionEntrega', 'horaEntrega', 'totalCarrito'));
+        }
+
+        // De lo contrario, redirigir a la vista de "Recoger en tienda"
+        return view('aroma.recoger', compact('carrito', 'metodoEntrega', 'direccionEntrega', 'horaEntrega', 'totalCarrito'));
     }
-
-    // Calcular el total del carrito
-    $totalCarrito = 0;
-    foreach ($carrito as $item) {
-        $totalCarrito += $item['precio_unitario'] * $item['cantidad'];  // Calcular el subtotal por producto y acumularlo
-    }
-
-    // Obtener los valores de la sesión relacionados con la entrega
-    $metodoEntrega = session('metodo_entrega', 'Recoger en tienda');
-    $direccionEntrega = session('direccion_entrega', 'Recoger en tienda');
-    $horaEntrega = session('hora_entrega', null);
-
-    // Guardar el total calculado en la sesión
-    session(['total_carrito' => $totalCarrito]);
-
-    // Si el carrito tiene un servicio de "Delivery", redirigir a la vista de delivery con el mapa
-    if ($isDelivery) {
-        return view('aroma.delivery', compact('carrito', 'metodoEntrega', 'direccionEntrega', 'horaEntrega', 'totalCarrito'));
-    }
-
-    // De lo contrario, redirigir a la vista de "Recoger en tienda"
-    return view('aroma.recoger', compact('carrito', 'metodoEntrega', 'direccionEntrega', 'horaEntrega', 'totalCarrito'));
-}
 
     public function guardarDatosCarrito(Request $request)
     {
-        $metodoEntrega = $request->input('direccion_entrega') === 'Recoger en tienda' 
-            ? 'Recojo en tienda' 
+        $metodoEntrega = $request->input('direccion_entrega') === 'Recoger en tienda'
+            ? 'Recojo en tienda'
             : 'Delivery';
 
         session([
-            'metodo_entrega' => $metodoEntrega, 
+            'metodo_entrega' => $metodoEntrega,
             'direccion_entrega' => $request->input('direccion_entrega'),
             'fecha_entrega' => $request->input('fecha_entrega'),
             'hora_entrega' => $request->input('hora_entrega'),
@@ -333,5 +342,4 @@ class CarritoController extends Controller
 
         return redirect()->route('carrito.confirmar'); // Redirigir a la página de confirmación del carrito
     }
-    
 }

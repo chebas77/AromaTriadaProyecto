@@ -84,7 +84,7 @@
                         <td class="px-4 py-2 border">{{ $tracking->estado_actual }}</td>
                         <td class="px-4 py-2 border">{{ $tracking->origen }}</td>
                         <td class="px-4 py-2 border">{{ $tracking->destino }}</td>
-                        <td class="px-4 py-2 border">{{ $tracking->fecha_despacho ? $tracking->fecha_despacho->format('Y-m-d') : 'Pendiente' }}</td>
+                        <td class="px-4 py-2 border">{{ $tracking->fecha_despacho}}</td>
                         <td class="px-4 py-2 border">{{ $tracking->fecha_entrega ? $tracking->fecha_entrega->format('Y-m-d'): 'Pendiente' }}</td>
                         <td class="px-4 py-2 border">{{ $tracking->hora_programada }}</td>
                         <td class="px-4 py-2 border">

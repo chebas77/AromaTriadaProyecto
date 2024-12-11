@@ -33,14 +33,16 @@
                 </select>
                 <input type="hidden" name="precio_unitario" id="precio-unitario" value="{{ $tamanos[0]['precio'] }}">
                 @elseif ($item->categoria->nombre === 'Boxes')
-                <!-- Tamaños para Boxes -->
-                <label for="tamano" class="block text-gray-700 font-semibold mb-2">Selecciona el tamaño del Box</label>
+                <!-- Configuración para Tamaño en Boxes -->
+                <label for="tamano" class="block text-gray-700 font-semibold mb-2">Selecciona el tamaño</label>
                 <select name="tamano" id="tamano" class="w-full border rounded px-4 py-2 mb-4" onchange="updatePrecio()">
-                    <option value="Pequeño" data-precio="{{ $item->precio * 0.5 }}">Pequeño - S/ {{ number_format($item->precio * 0.5, 2) }}</option>
-                    <option value="Mediano" data-precio="{{ $item->precio }}">Mediano - S/ {{ number_format($item->precio, 2) }}</option>
-                    <option value="Grande" data-precio="{{ $item->precio * 1.5 }}">Grande - S/ {{ number_format($item->precio * 1.5, 2) }}</option>
+                    @foreach ($tamanos as $tamano)
+                        <option value="{{ $tamano['tamano'] }}" data-precio="{{ $tamano['precio'] }}">
+                            {{ $tamano['tamano'] }} - S/ {{ number_format($tamano['precio'], 2) }}
+                        </option>
+                    @endforeach
                 </select>
-                <input type="hidden" name="precio_unitario" id="precio-unitario" value="{{ $item->precio }}">
+                <input type="hidden" name="precio_unitario" id="precio-unitario" value="{{ $tamanos[0]['precio'] }}">
                 @else
                 <!-- Precio fijo para otros productos -->
                 <input type="hidden" name="precio_unitario" id="precio-unitario" value="{{ $item->precio }}">

@@ -1,64 +1,62 @@
-<x-guest-layout>
-    <div class="min-h-screen flex flex-col justify-center items-center bg-blue-100">
-        <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-sm">
-            <div class="flex justify-center mb-6">
-                <div class="bg-blue-200 p-4 rounded-full">
-                    <svg class="w-12 h-12 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.86 0-7 3.14-7 7h14c0-3.86-3.14-7-7-7z" />
-                    </svg>
-                </div>
-            </div>
 
-            <x-validation-errors class="mb-4" />
+@extends('recursos.auth')
 
-            @if (session('status'))
-                <div class="mb-4 font-medium text-sm text-green-600">
-                    {{ session('status') }}
-                </div>
-            @endif
 
-            <form method="POST" action="{{ route('login') }}">
+@section('title', 'Iniciar Sesión')
+
+
+@section('content')
+    <div class="flex items-center justify-center bg-cover bg-center w-full relative" style="background-image: url('{{ asset('images/fondo2.png') }}'); min-height: 86vh;">
+        <!-- Capa con opacidad sobre el fondo -->
+        <div class="absolute inset-0 bg-black opacity-50"></div>
+       
+        <div class="w-full max-w-lg bg-violeta p-10 rounded-xl shadow-2xl z-10">
+            <h1 class="text-4xl font-extrabold text-center text-crema3 mb-8">Iniciar Sesión</h1>
+
+
+            <form method="POST" action="{{ route('login') }}" class="space-y-6">
                 @csrf
-
-                <div class="mb-4 relative">
-                    <x-label for="email" class="sr-only" value="{{ __('Email') }}" />
-                    <x-input id="email" class="block mt-2 w-full border border-blue-300 rounded-full p-3 pl-10 focus:border-blue-500" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="Username" />
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M20 4h-4V2h-4v2H8V2H4v2H2v2h20V4zm-1 4H5v14h14V8zM10 10h2v2h-2zm4 0h2v2h-2z" />
-                        </svg>
-                    </div>
+                <!-- Correo Electrónico -->
+                <div>
+                    <input type="email" name="email" placeholder="Email"
+                        class="w-full px-6 py-3 border border-crema1 rounded-lg shadow-sm focus:ring-2 focus:ring-crema1 focus:outline-none transition ease-in-out duration-300"
+                        required>
+                    @error('email')
+                        <span class="text-violeta text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="mb-4 relative">
-                    <x-label for="password" class="sr-only" value="{{ __('Password') }}" />
-                    <x-input id="password" class="block mt-2 w-full border border-blue-300 rounded-full p-3 pl-10 focus:border-blue-500" type="password" name="password" required autocomplete="current-password" placeholder="Password" />
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17 8V7a5 5 0 10-10 0v1a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V10a2 2 0 00-2-2zm-7-1a3 3 0 116 0v1h-6V7z" />
-                        </svg>
-                    </div>
+
+                <!-- Contraseña -->
+                <div>
+                    <input type="password" name="password" placeholder="Contraseña"
+                        class="w-full px-6 py-3 border border-crema1 rounded-lg shadow-sm focus:ring-2 focus:ring-crema1 focus:outline-none transition ease-in-out duration-300"
+                        required>
+                    @error('password')
+                        <span class="text-violeta text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="flex items-center justify-between mb-6">
-                    <label for="remember_me" class="flex items-center">
-                        <x-checkbox id="remember_me" name="remember" />
-                        <span class="ms-2 text-sm text-gray-700">{{ __('Remember me') }}</span>
-                    </label>
-                    
-                    @if (Route::has('password.request'))
-                        <a class="text-sm text-blue-600 hover:text-blue-800" href="{{ route('password.request') }}">
-                            {{ __('Forgot password?') }}
-                        </a>
-                    @endif
+
+                <!-- Olvidaste tu Contraseña -->
+                <div class="flex justify-between items-center">
+                    <a href="{{ route('password.request') }}" class="text-sm text-crema3 hover:text-crema1 transition">¿Olvidaste tu contraseña?</a>
                 </div>
 
-                <div class="flex justify-center">
-                    <x-button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full w-full">
-                        {{ __('Login') }}
-                    </x-button>
+
+                <!-- Botón de Inicio de Sesión -->
+                <div>
+                    <button type="submit"
+                        class="w-full bg-crema1 text-violeta py-3 font-semibold rounded-lg hover:bg-crema3 transition transform hover:scale-105 duration-300">
+                        Ingresar
+                    </button>
                 </div>
             </form>
+
+
+            <p class="text-center text-sm text-crema3 mt-6">¿No tienes cuenta?
+                <a href="{{ route('aroma.registro') }}" class="text-crema3 hover:underline">Regístrate</a>
+            </p>
         </div>
     </div>
-</x-guest-layout>
+@endsection

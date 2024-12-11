@@ -70,16 +70,17 @@ public function index()
         return view('aroma.carrito', compact('servicios'));
     }
     public function perfil()
-    {
-        // Obtener las compras realizadas por el usuario autenticado
-        $compras = DB::table('venta')
-            ->where('id_usuario', Auth::id()) // Filtrar por el usuario autenticado
-            ->orderBy('id_pedido', 'desc') // Ordenar por fecha descendente
-            ->get();
-    
-        // Pasar las compras a la vista
-        return view('aroma.perfil', compact('compras'));
-    }
+{
+    // Obtener las compras realizadas por el usuario autenticado, incluyendo el tracking
+    $compras = Venta::where('id_usuario', Auth::id())
+        ->with('tracking') // Cargar la relación de tracking
+        ->orderBy('id_pedido', 'desc') // Ordenar por fecha descendente
+        ->get();
+
+    // Pasar las compras a la vista
+    return view('aroma.perfil', compact('compras'));
+}
+
     public function registro()
     {
         return view('aroma.registro');

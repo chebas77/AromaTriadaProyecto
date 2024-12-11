@@ -33,6 +33,7 @@ class PaymentController extends Controller
             'total_carrito' => $request->input('total_carrito'),
         ]);
 
+        
 
         // Debugging: para ver los valores recibidos (opcional)
 
@@ -75,6 +76,7 @@ class PaymentController extends Controller
 
     public function success(Request $request)
     {
+        
 
         $session_id = $request->get('session_id');
         Stripe::setApiKey(config('services.stripe.secret'));
@@ -112,99 +114,99 @@ class PaymentController extends Controller
     }
 
     public function guardarVenta(Request $request)
-{
-    // Validar los datos del formulario
-    $request->validate([
-        'total_carrito' => 'required|numeric|min:1',
-        'metodo_entrega' => 'nullable|string|max:255',
-        'direccion_entrega' => 'nullable|string|max:255',
-        'fecha_entrega' => 'nullable|date',
-        'hora_entrega' => 'nullable|string|max:255',
-    ]);
-
-    // Verificar que el usuario esté autenticado
-    if (!Auth::check()) {
-        return redirect()->route('inicioSesion')->with('error', 'Debes iniciar sesión para continuar.');
-    }
-
-    // Obtener el usuario autenticado
-    $usuario = Auth::user();
-
-    // Crear la venta
-    $venta = Venta::create([
-        'fecha' => now(),
-        'estado' => 'En proceso',
-        'total' => $request->input('total_carrito'),
-        'metodo_pago' => 'Tarjeta de crédito',
-        'metodo_entrega' => $request->input('metodo_entrega', 'Sin especificar'),
-        'direccion_entrega' => $request->input('direccion_entrega', 'Sin especificar'),
-        'id_usuario' => $usuario->id,
-    ]);
-
-    // Guardar los detalles de la venta y actualizar el stock y disponibilidad
-    $carrito = session('carrito', []);
-    foreach ($carrito as $item) {
-        // Crear el detalle del pedido
-        $detalle = DetallePedido::create([
-            'id_pedido' => $venta->id_pedido,
-            'id_producto' => $item['tipo'] === 'producto' ? $item['id'] : null,
-            'id_servicio' => $item['tipo'] === 'servicio' ? $item['id'] : null,
-            'cantidad' => $item['cantidad'],
-            'precio_unitario' => $item['precio_unitario'],
-            'tamaño' => $item['tamano'] ?? null,
-            'dedicatoria' => $item['dedicatoria'] ?? null,
+    {
+        // Validar los datos del formulario
+        $request->validate([
+            'total_carrito' => 'required|numeric|min:1',
+            'metodo_entrega' => 'nullable|string|max:255',
+            'direccion_entrega' => 'nullable|string|max:255',
+            'fecha_entrega' => 'nullable|date',
+            'hora_entrega' => 'nullable|string|max:255',
         ]);
 
-        // Si es un producto, reducir el stock y actualizar la disponibilidad
-        if ($item['tipo'] === 'producto') {
-            $producto = Producto::find($item['id']);
-            if ($producto) {
-                // Verificar que el stock no sea negativo
-                if ($producto->stock >= $item['cantidad']) {
-                    // Reducir el stock
-                    $producto->stock -= $item['cantidad'];
-                    // Si el stock llega a 0, marcar el producto como no disponible
-                    if ($producto->stock == 0) {
-                        $producto->disponibilidad = 0; // No disponible
+        // Verificar que el usuario esté autenticado
+        if (!Auth::check()) {
+            return redirect()->route('inicioSesion')->with('error', 'Debes iniciar sesión para continuar.');
+        }
+
+        // Obtener el usuario autenticado
+        $usuario = Auth::user();
+
+        // Crear la venta
+        $venta = Venta::create([
+            'fecha' => now(),
+            'estado' => 'En proceso',
+            'total' => $request->input('total_carrito'),
+            'metodo_pago' => 'Tarjeta de crédito',
+            'metodo_entrega' => $request->input('metodo_entrega', 'Sin especificar'),
+            'direccion_entrega' => $request->input('direccion_entrega', 'Sin especificar'),
+            'id_usuario' => $usuario->id,
+        ]);
+
+        // Guardar los detalles de la venta y actualizar el stock y disponibilidad
+        $carrito = session('carrito', []);
+        foreach ($carrito as $item) {
+            // Crear el detalle del pedido
+            $detalle = DetallePedido::create([
+                'id_pedido' => $venta->id_pedido,
+                'id_producto' => $item['tipo'] === 'producto' ? $item['id'] : null,
+                'id_servicio' => $item['tipo'] === 'servicio' ? $item['id'] : null,
+                'cantidad' => $item['cantidad'],
+                'precio_unitario' => $item['precio_unitario'],
+                'tamaño' => $item['tamano'] ?? null,
+                'dedicatoria' => $item['dedicatoria'] ?? null,
+            ]);
+
+            // Si es un producto, reducir el stock y actualizar la disponibilidad
+            if ($item['tipo'] === 'producto') {
+                $producto = Producto::find($item['id']);
+                if ($producto) {
+                    // Verificar que el stock no sea negativo
+                    if ($producto->stock >= $item['cantidad']) {
+                        // Reducir el stock
+                        $producto->stock -= $item['cantidad'];
+                        // Si el stock llega a 0, marcar el producto como no disponible
+                        if ($producto->stock == 0) {
+                            $producto->disponibilidad = 0; // No disponible
+                        }
+                        $producto->save(); // Guardar el producto con el stock y disponibilidad actualizados
+                    } else {
+                        // Si el stock no es suficiente, podemos manejar el error
+                        return redirect()->route('carrito.mostrar')->with('error', 'No hay suficiente stock para uno o más productos.');
                     }
-                    $producto->save(); // Guardar el producto con el stock y disponibilidad actualizados
-                } else {
-                    // Si el stock no es suficiente, podemos manejar el error
-                    return redirect()->route('carrito.mostrar')->with('error', 'No hay suficiente stock para uno o más productos.');
                 }
             }
         }
+
+        // Crear el registro del pago
+        Pago::create([
+            'id_pedido' => $venta->id_pedido,
+            'fecha_pago' => now(),
+            'monto' => $request->input('total_carrito'),
+            'estado' => 'Completado',
+            'metodo' => 'Tarjeta de crédito',
+        ]);
+
+        // Crear el tracking
+        $tracking = Tracking::create([
+            'id_venta' => $venta->id_pedido,
+            'origen' => 'Almacén central',
+            'destino' => $request->input('direccion_entrega'),
+            'estado_actual' => 'Preparando envío',
+            'fecha_despacho' => null,
+            'fecha_entrega' => $request->input('fecha_entrega'),
+            'hora_programada' => $request->input('hora_entrega'),
+        ]);
+
+        // Limpiar datos de la sesión relacionados con el carrito
+        session()->forget(['carrito', 'total_carrito', 'direccion_entrega', 'fecha_entrega', 'hora_entrega', 'metodo_entrega']);
+
+        // Redirigir con el ID del tracking
+
+        return redirect()->route('tracking.detalle', ['id' => $tracking->id_tracking])->with([
+            'success' => 'Tu pedido ha sido registrado exitosamente.'
+        ]);
     }
-
-    // Crear el registro del pago
-    Pago::create([
-        'id_pedido' => $venta->id_pedido,
-        'fecha_pago' => now(),
-        'monto' => $request->input('total_carrito'),
-        'estado' => 'Completado',
-        'metodo' => 'Tarjeta de crédito',
-    ]);
-
-    // Crear el tracking
-    $tracking = Tracking::create([
-        'id_venta' => $venta->id_pedido,
-        'origen' => 'Almacén central',
-        'destino' => $request->input('direccion_entrega'),
-        'estado_actual' => 'Preparando envío',
-        'fecha_despacho' => null,
-        'fecha_entrega' => $request->input('fecha_entrega'),
-        'hora_programada' => $request->input('hora_entrega'),
-    ]);
-
-    // Limpiar datos de la sesión relacionados con el carrito
-    session()->forget(['carrito', 'total_carrito', 'direccion_entrega', 'fecha_entrega', 'hora_entrega', 'metodo_entrega']);
-
-    // Redirigir con el ID del tracking
-    return redirect()->route('tracking.mostrar')->with([
-        'success' => 'Tu pedido ha sido registrado exitosamente.',
-        'tracking_id' => $tracking->id_tracking,
-    ]);
-}
 
 
 

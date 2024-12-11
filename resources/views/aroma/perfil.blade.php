@@ -89,7 +89,7 @@
 
       <!-- Lista con las primeras 10 compras -->
       <ul class="space-y-4">
-        @forelse($compras->take(10) as $compra)
+        @forelse($compras->take(5) as $compra)
         <li class="p-4 bg-violeta rounded-lg flex justify-between items-center">
           <div>
             <p class="font-bold text-crema1">Pedido #{{ $compra->id_pedido }}</p>
@@ -104,7 +104,7 @@
 
 
       <!-- Botón Ver Más -->
-      @if($compras->count() > 10)
+      @if($compras->count() > 5)
       <div class="flex justify-center mt-4">
         <button
           onclick="document.getElementById('purchasesModal').classList.remove('hidden')"
@@ -116,41 +116,50 @@
 
 
       <!-- Modal de Compras -->
-      <div id="purchasesModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white w-2/3 rounded-lg shadow-lg p-6 relative">
-          <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Compras Realizadas</h2>
+      <div id="purchasesModal" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-crema1 w-2/3 rounded-lg shadow-lg p-6 relative">
+        <h2 class="text-2xl font-bold mb-6 text-center text-violeta">Compras Realizadas</h2>
 
-
-          <!-- Lista de Todas las Compras -->
-          <div class="overflow-y-auto max-h-96">
+        <!-- Lista de Todas las Compras -->
+        <div class="overflow-y-auto max-h-96">
             @if($compras->isNotEmpty())
             <ul class="space-y-4">
-              @foreach($compras as $compra)
-              <li class="p-4 bg-gray-100 rounded-lg flex justify-between items-center">
-                <div>
-                  <p class="font-bold">Pedido #{{ $compra->id_pedido }}</p>
-                  <p class="text-gray-700">Fecha: {{ \Carbon\Carbon::parse($compra->fecha)->format('d/m/Y') }}</p>
-                  <p class="text-gray-700">Total: S/ {{ number_format($compra->total, 2) }}</p>
-                </div>
-              </li>
-              @endforeach
+                @foreach($compras as $compra)
+                <li class="p-4 bg-gray-100 rounded-lg flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-violeta">Pedido #{{ $compra->id_pedido }}</p>
+                        <p class="text-gray-700">Fecha: {{ \Carbon\Carbon::parse($compra->fecha)->format('d/m/Y') }}</p>
+                        <p class="text-gray-700">Total: S/ {{ number_format($compra->total, 2) }}</p>
+                    </div>
+                    <div>
+                        @if($compra->tracking)
+                        <a href="{{ route('tracking.detalle', $compra->tracking->id_tracking) }}"
+                            class="bg-violeta text-white px-4 py-2 rounded-md hover:bg-violeta-dark transition">
+                            Ver Detalle
+                        </a>
+                        @else
+                        <span class="text-gray-500">Sin tracking</span>
+                        @endif
+                    </div>
+                </li>
+                @endforeach
             </ul>
             @else
             <p class="text-violeta text-center">No has realizado ninguna compra aún.</p>
             @endif
-          </div>
-
-
-          <!-- Botón para cerrar -->
-          <div class="flex justify-end mt-4">
-            <button
-              onclick="document.getElementById('purchasesModal').classList.add('hidden')"
-              class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none">
-              Cerrar
-            </button>
-          </div>
         </div>
-      </div>
+
+        <!-- Botón para cerrar -->
+        <div class="flex justify-end mt-4">
+            <button
+                onclick="document.getElementById('purchasesModal').classList.add('hidden')"
+                class="bg-violeta text-white px-4 py-2 rounded-md hover:bg-violeta-dark focus:outline-none">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
     </div>
 
 
