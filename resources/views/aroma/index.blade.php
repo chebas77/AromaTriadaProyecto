@@ -1,4 +1,3 @@
-
 @extends('recursos.app')
   @section('title', 'Index')
 
@@ -40,7 +39,7 @@
 
 <!-- Featured Collection Carousel -->
 <section class="container mx-auto py-12 px-6 text-center">
-  <h2 class="text-3xl font-bold mb-6 font-fascinate">COLECCIÓN DESTACADA</h2>
+  <h2 class="text-4xl font-bold mb-6 font-fascinate text-violeta">COLECCIÓN DESTACADA</h2>
 
 
   <!-- Swiper -->
@@ -117,7 +116,7 @@
 
  <!-- PRINCIPALES CATEGPRIAS -->
  <section class="container mx-auto py-12 px-8 text-center">
-  <h2 class="text-3xl font-bold mb-6 font-fascinate">PRINCIPALES CATEGORÍAS</h2>
+  <h2 class="text-4xl font-bold mb-6 font-fascinate text-violeta">PRINCIPALES CATEGORÍAS</h2>
 
 
   <!-- Static Categories -->
@@ -198,7 +197,7 @@
   <!-- GALERIA DE FOTOS -->
   <section class="bg-crema1 py-16">
     <div class="container mx-auto">
-        <h2 class="text-3xl font-bold text-center mb-8 font-fascinate">Galería de Fotos</h2>
+        <h2 class="text-4xl font-bold text-center mb-8 font-fascinate text-violeta">Galería de Fotos</h2>
        
         <!-- Collage -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -255,4 +254,3 @@
     </div>
 </section>
   @endsection
-

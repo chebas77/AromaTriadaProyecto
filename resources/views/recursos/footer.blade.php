@@ -18,7 +18,6 @@
         <li><a href="{{ route('aroma.index') }}" class="hover:text-custom-hover">Inicio</a></li>
         <li><a href="{{ route('aroma.catalogo') }}" class="hover:text-custom-hover">Catálogo</a></li>
         <li><a href="{{ route('aroma.nosotros') }}" class="hover:text-custom-hover">Nosotros</a></li>
-        <li><a href="{{ route('tracking.mostrar') }}" class="hover:text-custom-hover">Tracking</a></li>
       </ul>
     </div>
 

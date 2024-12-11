@@ -61,7 +61,6 @@
       <ul class="space-y-2">
         <li><a href="#personal-info" class="text-gray-700 hover:text-black font-medium">Información Personal</a></li>
         <li><a href="#order-history" class="text-gray-700 hover:text-black font-medium">Historial de Pedidos</a></li>
-        <li><a href="#saved-items" class="text-gray-700 hover:text-black font-medium">Productos Guardados</a></li>
         <li><a href="#settings" class="text-gray-700 hover:text-black font-medium">Ajustes</a></li>
         <li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="text-red-500 hover:text-red-700 font-medium">Cerrar Sesión</a></li>
       </ul>
@@ -108,7 +107,7 @@
       <div class="flex justify-center mt-4">
         <button
           onclick="document.getElementById('purchasesModal').classList.remove('hidden')"
-          class="bg-black text-white px-4 py-2 rounded font-bold hover:bg-gray-800">
+          class="bg-violeta text-white px-4 py-2 rounded font-bold hover:bg-gray-800">
           Ver Más
         </button>
       </div>
@@ -172,4 +171,4 @@
   </div>
 </section>
 @endif
-@endsection
+@endsection 

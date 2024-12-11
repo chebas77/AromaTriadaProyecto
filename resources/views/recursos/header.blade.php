@@ -2,10 +2,57 @@
     <!-- Header -->
     <header class="bg-violeta text-black w-full">
         <!-- Banner de promociones -->
-        <div class="bg-crema1 text-black text-center py-2 text-xs -ml-2">
-            APROVECHA LOS NUEVOS LANZAMIENTOS POR ÉPOCAS NAVIDEÑAS!!
+        <!-- Banner Carrusel -->
+<div id="promoCarousel" class="bg-crema1 text-black text-center py-5 text-sm -ml-2 overflow-hidden relative flex items-center justify-center font-semibold">
+    <div class="promo-slides relative w-full">
+        <div class="slide active absolute top-0 left-0 w-full flex items-center justify-center">
+            <span>APROVECHA LOS NUEVOS LANZAMIENTOS POR ÉPOCAS NAVIDEÑAS!!</span>
         </div>
-       
+        <div class="slide absolute top-0 left-0 w-full flex items-center justify-center">
+            <span>DESCUENTOS ESPECIALES EN PRODUCTOS PROXIMAMENTE</span>
+        </div>
+        <div class="slide absolute top-0 left-0 w-full flex items-center justify-center">
+            <span>ENDULZA TUS DÍAS CON AROMATRIADA</span>
+        </div>
+    </div>
+</div>
+
+<style>
+#promoCarousel .promo-slides {
+    height: 100%;
+}
+#promoCarousel .slide {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+#promoCarousel .slide.active {
+    opacity: 1;
+}
+#promoCarousel .slide span {
+    text-align: center;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('#promoCarousel .slide');
+    let currentSlide = 0;
+
+    function nextSlide() {
+        // Remove active class from current slide
+        slides[currentSlide].classList.remove('active');
+        
+        // Move to next slide, loop back to start if at end
+        currentSlide = (currentSlide + 1) % slides.length;
+        
+        // Add active class to new slide
+        slides[currentSlide].classList.add('active');
+    }
+
+    // Change slide every 5 seconds
+    setInterval(nextSlide, 5000);
+});
+</script>
         <!-- Barra de navegación -->
         <nav class="w-full flex items-center justify-between py-2 px-12 mt-8">
             <!-- Logo alineado a la izquierda -->
@@ -23,6 +70,7 @@
                     <li><a href="{{ route('aroma.nosotros') }}" class="hover:underline">NOSOTROS</a></li>
                     <li><a href="{{ route('aroma.preguntas') }}" class="hover:underline">PREGUNTAS</a></li>
                     <li><a href="{{ route('aroma.catalogo') }}" class="hover:underline">CATÁLOGO</a></li>
+                    <li><a href="{{ route('tracking.mostrar') }}" class="hover:underline">TRACKING</a></li>
                 </ul>
             </div>
 

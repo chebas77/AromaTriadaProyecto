@@ -416,9 +416,8 @@ class AdminController extends Controller
 
     public function verPedidos(Request $request)
     {
-        $this->verificarAdministrador(); // Verifica si el usuario es administrador
+        $this->verificarAdministrador(); 
 
-        // Obtener los términos de búsqueda y filtros
         $search = $request->input('search');
         $fecha_inicio = $request->input('fecha_inicio');
         $fecha_fin = $request->input('fecha_fin');
