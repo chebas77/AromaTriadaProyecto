@@ -22,7 +22,6 @@ class AromaController extends Controller
         // Filtrado por categorías
         if ($request->filled('categorias')) {
             $productosQuery->whereIn('id_categoria', $request->categorias);
-            $serviciosQuery->whereIn('id_categoria', $request->categorias);
         }
     
         // Obtener los productos y servicios filtrados
